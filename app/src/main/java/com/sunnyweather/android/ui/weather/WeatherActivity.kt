@@ -1,5 +1,6 @@
 package com.sunnyweather.android.ui.weather
 
+import android.content.res.Resources
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -19,7 +20,7 @@ import java.util.Locale
 
 class WeatherActivity : AppCompatActivity() {
 
-    val viewModel by lazy { ViewModelProvider(this)[WeatherViewModel::class.java] }
+    private val viewModel by lazy { ViewModelProvider(this)[WeatherViewModel::class.java] }
 
     private var _binding : ActivityWeatherBinding ?= null
 
@@ -51,8 +52,19 @@ class WeatherActivity : AppCompatActivity() {
                 Toast.makeText(this, "无法成功获取天气信息", Toast.LENGTH_SHORT).show()
                 result.exceptionOrNull()?.printStackTrace()
             }
+            binding.swipeRefresh.isRefreshing = false
         })
+        binding.swipeRefresh.setColorSchemeColors(resources.getColor(R.color.colorPrimary))
+        refreshWeather()
+        binding.swipeRefresh.setOnRefreshListener {
+            refreshWeather()
+        }
+
+    }
+
+    private fun refreshWeather() {
         viewModel.refreshWeather(viewModel.locationLng, viewModel.locationLat)
+        binding.swipeRefresh.isRefreshing = true
     }
     private fun showWeatherInfo(weather: Weather) {
         binding.now.placeName.text = viewModel.placeName
