@@ -1,14 +1,17 @@
 package com.sunnyweather.android.ui.weather
 
-import android.content.res.Resources
+import android.content.Context
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.sunnyweather.android.R
@@ -20,7 +23,7 @@ import java.util.Locale
 
 class WeatherActivity : AppCompatActivity() {
 
-    private val viewModel by lazy { ViewModelProvider(this)[WeatherViewModel::class.java] }
+    val viewModel by lazy { ViewModelProvider(this)[WeatherViewModel::class.java] }
 
     private var _binding : ActivityWeatherBinding ?= null
 
@@ -60,9 +63,21 @@ class WeatherActivity : AppCompatActivity() {
             refreshWeather()
         }
 
+        binding.now.navBtn.setOnClickListener {
+            binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+        binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerStateChanged(newState: Int) {}
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+            override fun onDrawerOpened(drawerView: View) {}
+            override fun onDrawerClosed(drawerView: View) {
+                val manager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                manager.hideSoftInputFromWindow(drawerView.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+            }
+        })
     }
 
-    private fun refreshWeather() {
+    fun refreshWeather() {
         viewModel.refreshWeather(viewModel.locationLng, viewModel.locationLat)
         binding.swipeRefresh.isRefreshing = true
     }
@@ -85,6 +100,7 @@ class WeatherActivity : AppCompatActivity() {
             val temperature = daily.temperature[i]
             val view = LayoutInflater.from(this).inflate(R.layout.forecast_item,
                 binding.forecast.forecastLayout, false)
+//            TODO("可以优化为ViewBinding")
             val dateInfo = view.findViewById(R.id.dateInfo) as TextView
             val skyIcon = view.findViewById(R.id.skyIcon) as ImageView
             val skyInfo = view.findViewById(R.id.skyInfo) as TextView
